@@ -19,14 +19,45 @@ public class OutServer {
             System.exit(1);
         }
         
+        // Thread thread1 = new Thread(() -> spam("purrrrr"));
+       
+        // Thread thread2 = new Thread(() -> spam("wassup"));
+
+
+        //  thread1.start();
+        // thread2.start();
+
     }
 
+    public static void spam(String msg) {
+        while(true) {
+            System.out.println(msg);
+            try {
+            Thread.sleep(1000);
+
+            }catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+    }
+
+
+
+
     public static void writeToSocket(int port) throws IOException {
-        ServerSocket server = new ServerSocket(port);
+
+        try (ServerSocket server = new ServerSocket(port)) {
 
         System.out.println("Waiting for client to connect ....");
         Socket socket = server.accept();
-        System.out.println("Client connnected!");
+        handleClient(socket);   
+   
+        }
+        }
+    
+    public static void handleClient(Socket socket) throws IOException{
+             System.out.println("Client connnected!");
 
         OutputStream outputStream = socket.getOutputStream();
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, java.nio.charset.StandardCharsets.UTF_8);
@@ -37,7 +68,8 @@ public class OutServer {
             bufferedWriter.write("Hello");
             bufferedWriter.newLine();
             bufferedWriter.flush();
-        }
-    
+
     }
+}
+
 }
