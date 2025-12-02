@@ -22,16 +22,19 @@ public class ChatClient {
     }
     
     public static void readFromSocket(String host, int port) throws IOException {
-        Socket socket = new Socket(host, port);
 
-        InputStream inputStream = socket.getInputStream();
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        
+        try (Socket socket = new Socket(host, port)) {
+            InputStream inputStream = socket.getInputStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-        String line;
-        while((line = bufferedReader.readLine()) != null) {
-            System.out.println(line);
-        }
+            String line;
+            while((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } 
+
     }
 
     public static void readFromFile(String filename) throws IOException{
