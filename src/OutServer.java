@@ -16,23 +16,61 @@ public class OutServer {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+
+        Thread thread1 = new Thread(() -> spam("hello"));
+        Thread thread2 = new Thread(() -> spam("world!"));
+        thread1.start();
+        thread2.start();
     }
-
-    public static void writeToSocket(int port) throws IOException {
-        ServerSocket server = new ServerSocket(port);
-
-        System.out.println("waiting for client to connect...");
-        Socket socket = server.accept();
-        System.out.println("Client connected!");
-
-        OutputStream outputStream = socket.getOutputStream();
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, java.nio.charset.StandardCharsets.UTF_8);
-        BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-
-        while (true) {
-            bufferedWriter.write("Hello");
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
+    public static void spam(String msg){
+        while(true){
+            System.out.println(msg);
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+           
         }
     }
+    public static void writeToSocket(int port) throws IOException {
+        try(ServerSocket server = new ServerSocket(port)){
+            while(true){
+                System.out.println("waiting for client to connect...");
+                Socket socket = server.accept();
+
+                Thread clientThread = new Thread (() -> handleClient(socket));
+                clientThread.start();
+            }
+        }
+    }
+    
+    public static void handleClient(Socket socket) {
+        try{
+            System.out.println("Client connected!");
+
+            OutputStream outputStream = socket.getOutputStream();
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, java.nio.charset.StandardCharsets.UTF_8);
+            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+            while (true) {
+                bufferedWriter.write("Hello");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("Client interrupted");
+                    return;
+                }   
+            }
+        } catch (IOException e) {
+            System.out.println("Client disconnected");
+            return;
+        }
+    }
+        
 }
