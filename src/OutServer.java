@@ -8,7 +8,7 @@ import java.net.Socket;
 // To recompile files and run server:
 // javac src/*.java && java -cp src OutServer
 public class OutServer {
-    
+
     public static void main(String[] args) {
         try {
             writeToSocket(12345);
@@ -17,23 +17,63 @@ public class OutServer {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+
+        // Thread thread1 = new Thread(() -> spam("lol"));
+        // Thread thread2 = new Thread(() -> spam("jaja"));
+
+        // thread1.start();
+        // thread2.start();
+    }
+
+    public static void spam(String msg) {
+        while (true) {
+            System.out.println(msg);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
     }
 
     public static void writeToSocket(int port) throws IOException {
-        ServerSocket server = new ServerSocket(port);
+        try (ServerSocket server = new ServerSocket(port)) {
+            while (true) {
+                System.out.println("waiting for client to connect...");
+                Socket socket = server.accept();
 
-        System.out.println("waiting for client to connect...");
-        Socket socket = server.accept();
-        System.out.println("Client connected!");
+                Thread clientThread = new Thread(() -> handleClient(socket));
+                clientThread.start();
+            }
+        }
+    }
 
-        OutputStream outputStream = socket.getOutputStream();
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, java.nio.charset.StandardCharsets.UTF_8);
-        BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+    public static void handleClient(Socket socket) {
+        try {
+            System.out.println("Client connected!");
 
-        while(true) {
-            bufferedWriter.write("hello");
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
+            OutputStream outputStream = socket.getOutputStream();
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream,
+                    java.nio.charset.StandardCharsets.UTF_8);
+            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+            while (true) {
+                bufferedWriter.write("hello");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("Client Interrupted");
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Client disconnected");
+            return;
         }
 
     }
