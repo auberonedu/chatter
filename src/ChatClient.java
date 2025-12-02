@@ -13,36 +13,38 @@ public class ChatClient {
     public static void main(String[] args) {
         try {
             readFromSocket("localhost", 12345);
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Error reading from socket");
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
 
-    public static void readFromFile(String filename) throws IOException{
+    public static void readFromFile(String filename) throws IOException {
         InputStream inputStream = new FileInputStream(filename);
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-        String line; 
-        while((line = bufferedReader.readLine()) != null) {
-            System.out.println(line);
-        }
-
-        //System.out.println(bufferedReader.readLine());
-    }
-
-    public static void readFromSocket(String host, int port) throws IOException {
-        Socket socket = new Socket(host, port);
-
-        InputStream inputStream = socket.getInputStream();
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8);
+        InputStreamReader inputStreamReader = new InputStreamReader(inputStream,
+                java.nio.charset.StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
         String line;
-        while((line = bufferedReader.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             System.out.println(line);
         }
+
+        // System.out.println(bufferedReader.readLine());
+    }
+
+    public static void readFromSocket(String host, int port) throws IOException {
+        
+        try (Socket socket = new Socket(host, port)) {
+            InputStream inputStream = socket.getInputStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            String line;
+            while((line = bufferedReader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } 
     }
 }
